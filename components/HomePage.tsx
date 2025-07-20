@@ -17,10 +17,11 @@ interface HomePageProps {
   imageUrls: Record<string, string>;  // NEW
   onLoadMore: () => void;             // NEW
   hasMoreSongs: boolean;              // NEW
+  recentlyPlayedSongs: Song[];        // NEW
 }
 
 
-const HomePage: React.FC<HomePageProps> = ({ songs, onSongPlay, formatNumber, onAddToPlaylist, onAddToQueue, imageUrls,onLoadMore,hasMoreSongs }) => {
+const HomePage: React.FC<HomePageProps> = ({ songs, onSongPlay, formatNumber, onAddToPlaylist, onAddToQueue, imageUrls,onLoadMore,hasMoreSongs, recentlyPlayedSongs }) => {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   
@@ -84,6 +85,41 @@ const HomePage: React.FC<HomePageProps> = ({ songs, onSongPlay, formatNumber, on
             ))}
           </div>
         </div>
+
+        {/* Recently Played Section */}
+        {recentlyPlayedSongs.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Recently Played</h2>
+              <button className="text-purple-400 text-sm font-medium">See all</button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {recentlyPlayedSongs.map((song) => (
+                <button
+                  key={song.id}
+                  onClick={() => onSongPlay(song)}
+                  className={`flex items-center p-2 ${
+                    isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'
+                  } rounded-lg transition-all group text-left`}
+                >
+                  <img
+                    src={imageUrls[song.id] || '/placeholder.png'}
+                    alt={song.name}
+                    className="w-12 h-12 rounded-lg object-cover mr-3 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate text-sm`}>
+                      {song.name}
+                    </h3>
+                    <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs truncate`}>
+                      {song.artist}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recommendations Section */}
         <div>

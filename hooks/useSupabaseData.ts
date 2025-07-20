@@ -8,6 +8,7 @@ export function useSupabaseData(user: User | null) {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [likedSongs, setLikedSongs] = useState<Set<number>>(new Set())
   const [lastPlayedSong, setLastPlayedSong] = useState<Song | null>(null)
+  const [recentlyPlayedSongs, setRecentlyPlayedSongs] = useState<Song[]>([])
   const [loading, setLoading] = useState(true)
   const [currentSongStartTime, setCurrentSongStartTime] = useState<Date | null>(null)
   const currentSongRef = useRef<string | null>(null)
@@ -332,6 +333,59 @@ export function useSupabaseData(user: User | null) {
       return [];
     }
   };
+
+  // Fetch recently played songs based on listening history
+  const fetchRecentlyPlayed = async () => {
+    if (!user) {
+      setRecentlyPlayedSongs([])
+      return
+    }
+
+    try {
+      // Get user's listening history sorted by minutes listened
+      const { data: historyData, error: historyError } = await supabase
+        .from('history')
+        .select(`
+          song_id,
+          minutes_listened,
+          songs (*)
+        `)
+        .eq('user_id', user.id)
+        .order('minutes_listened', { ascending: false })
+        .limit(9)
+
+      if (historyError) {
+        console.error('Error fetching recently played:', historyError)
+        return
+      }
+
+      if (!historyData || historyData.length === 0) {
+        setRecentlyPlayedSongs([])
+        return
+      }
+
+      // Get user's liked songs for proper conversion
+      const { data: likedData } = await supabase
+        .from('liked_songs')
+        .select('song_id')
+        .eq('user_id', user.id)
+      
+      const userLikedSongs = new Set<number>()
+      if (likedData) {
+        likedData.forEach(item => userLikedSongs.add(item.song_id))
+      }
+
+      // Convert to Song format
+      const recentSongs = historyData
+        .filter(item => item.songs) // Ensure song data exists
+        .map(item => convertDatabaseSong(item.songs, userLikedSongs.has(item.song_id)))
+
+      setRecentlyPlayedSongs(recentSongs)
+    } catch (error) {
+      console.error('Error fetching recently played songs:', error)
+      setRecentlyPlayedSongs([])
+    }
+  }
 
   // Fetch user playlists
   const fetchPlaylists = async () => {
@@ -700,7 +754,7 @@ try {
 
       try {
         setLoading(true)
-        await Promise.all([fetchSongs(), fetchPlaylists()])
+        await Promise.all([fetchSongs(), fetchPlaylists(), fetchRecentlyPlayed()])
       } catch (error) {
         console.error('Error loading data:', error)
       } finally {
@@ -715,6 +769,7 @@ try {
     songs,
     playlists,
     likedSongs: songs.filter(song => song.isLiked),
+    recentlyPlayedSongs,
     lastPlayedSong,
     loading,
     toggleLike,
@@ -728,6 +783,7 @@ try {
     refreshData: () => {
       fetchSongs()
       fetchPlaylists()
+      fetchRecentlyPlayed()
     },
     getPersonalizedSongs,
     getSmartPersonalizedSongs

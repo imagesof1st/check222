@@ -28,6 +28,7 @@ function MusicPlayerContent() {
     songs,
     playlists,
     likedSongs,
+    recentlyPlayedSongs,
     lastPlayedSong,
     loading,
     toggleLike,
@@ -729,6 +730,7 @@ const handleNext = async () => {
       case 'home':
         return <HomePage
                 songs={displayedSongs}
+                recentlyPlayedSongs={recentlyPlayedSongs}
                 onSongPlay={handleSongPlay}
                 formatNumber={formatNumber}
                 onAddToPlaylist={handleAddToPlaylist}
@@ -752,6 +754,7 @@ const handleNext = async () => {
       default:
         return <HomePage
               songs={displayedSongs}
+              recentlyPlayedSongs={recentlyPlayedSongs}
               onSongPlay={handleSongPlay}
               formatNumber={formatNumber}
               onAddToPlaylist={handleAddToPlaylist}
