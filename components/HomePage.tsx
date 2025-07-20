@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import { TrendingUp, Music, Plus } from 'lucide-react';
+import { TrendingUp, Music, Plus, Play } from 'lucide-react';
 import { Song } from '@/types';
 import { useTheme } from '@/components/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -93,29 +93,36 @@ const HomePage: React.FC<HomePageProps> = ({ songs, onSongPlay, formatNumber, on
               <h2 className="text-xl font-semibold">Recently Played</h2>
               <button className="text-purple-400 text-sm font-medium">See all</button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
               {recentlyPlayedSongs.map((song) => (
-                <button
+                <div
                   key={song.id}
+                  className="flex-shrink-0 w-32 group cursor-pointer"
                   onClick={() => onSongPlay(song)}
-                  className={`flex items-center p-2 ${
-                    isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'
-                  } rounded-lg transition-all group text-left`}
                 >
-                  <img
-                    src={imageUrls[song.id] || '/placeholder.png'}
-                    alt={song.name}
-                    className="w-12 h-12 rounded-lg object-cover mr-3 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate text-sm`}>
+                  <div className="relative mb-2">
+                    <img
+                      src={imageUrls[song.id] || '/placeholder.png'}
+                      alt={song.name}
+                      className="w-full h-32 rounded-lg object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="text-white" size={20} fill="white" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate text-sm mb-1`}>
                       {song.name}
                     </h3>
-                    <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs truncate`}>
+                    <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs truncate mb-1`}>
                       {song.artist}
                     </p>
+                    <span className={`${isDarkMode ? 'text-gray-500' : 'text-gray-500'} text-xs`}>
+                      {song.language}
+                    </span>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
